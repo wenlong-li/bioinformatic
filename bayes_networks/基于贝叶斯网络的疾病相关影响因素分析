@@ -1,1 +1,31 @@
+学习目的：应用贝叶斯网络模型分析疾病二分类属性下的多重因变量（因变量间的相互关系）对应变量的影响，区别于logistics回归，主要是要分析因变量的相关关系及其影响的作用方向对应变量的影响。
 
+参考文献：1.Prevalence of hyperlipidemia in Shanxi Province, China and application of Bayesian networks to analyse its related factors.PMID:29491353。
+         2.Application of tabu search-based Bayesian networks in exploring related factors of liver cirrhosis complicated with hepatic encephalopathy and disease identification.PMID:31000773. 
+         3.Application of a Tabu search-based Bayesian network in identifying factors related to hypertension.PMID: 31232943.
+
+贝叶斯网络主要分为结构学习，参数学习和统计推断三个部分。
+首先第一步要对数据集进行结构学习，找出有向边，即找出各个因素间的相互作用关系图。
+
+>diabetes
+##diabetes为贝叶斯网络模型所用的训练数据集。在此需要强调此数据集只能用R语言中的read.table函数进行读入，不能用import dataset进行导入，数据集格式必须为data.frame这一种类型，否则将会在随后的结构学习参数运行时报错。此外，数据集的每个变量必须有至少2个level的分层，可以用labers参数进行标签注释；
+>library(bnlearn)
+##加载R语言bnlearn软件包
+>diabetes<-discretize(diabetes,method = "quantile")
+##如果数据集中变量是连续型变量，还必须对变量进行离散化，建议读入数据集前就将数据进行离散化（可以用SPSS保存显示分层，这个每个分层就相当于离散形式）
+>diabetes_1<-hc(diabetes)
+##采用hc(爬山算法)进行结构学习，并重新赋值为diabetes_1。
+除了hc算法，简单介绍主要的算法分类：
+  基于约束的算法：gs,iamb,fast.iamb,inter,iamb
+  基于得分的算法：hc,tabu
+  混合算法：mmhc,rsmax2
+>plot(diabetes_1)
+##plot之后便可以得出个变量间的互作用关系结构网络图
+diabetes_new
+##这时我们需要再选取一个数据集（学习diabetes数据集的结构）
+>bayesnet<-bn.fit(diabetes_1,diabetes_new,method = "mle")
+##此时，用bn.fit函数进行参数学习，diabetes_1为模板学习数据集，diabetes_new为需要进行学习的数据集
+>pre<-predict(bayesnet,data = diabetes_new,node = "BMI")
+#训练样本预测
+cpquery(bayesnet,(BMI=='normal'),(age=='(36,81]'&sex=='female'))
+##进行条件推理
